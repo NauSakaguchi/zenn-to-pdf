@@ -1,18 +1,15 @@
 # This is a zenn_to_pdf Python script.
 import os
 import shutil
-
 import time
-
 from selenium import webdriver
-
 from pdf_downloader import get_chrome_options, save_as_pdf
+from utils import merge_pdf_files
 
 # todo
 # url_articleを入力された値にする
-# pdfで各チャプターを保存する
-# 各チャプターのPDFを一つにまとめあげる
-
+# プロセスの進捗度を表示
+# chromeのウィンドウを非表示に
 
 if __name__ == '__main__':
 
@@ -37,9 +34,11 @@ if __name__ == '__main__':
     chrome_options = get_chrome_options(savefile_default_directory)
     driver = webdriver.Chrome(executable_path=driver_path, options=chrome_options)
     driver.get(url_article)
+    book_name = driver.title
 
     # get URL list of the table contents
     table_contents = driver.find_elements_by_class_name(class_name_of_table_contents)
+    print("Each Chpater URLs:")
     for contents in table_contents:
         print(contents.get_attribute('href'))
         url_list_table_contents += [contents.get_attribute('href')]
@@ -49,5 +48,11 @@ if __name__ == '__main__':
         chapter_title_list.append(save_as_pdf(driver, url_table_contents, style_file_path))
 
     # close chrome window and terminate driver
+    time.sleep(3)  # in case it takes time to download pdf files
     driver.quit()
 
+    # append pdf files into /output/book_name.pdf
+    merge_pdf_files(chapter_title_list, savefile_default_directory, output_filepath, book_name)
+
+    # delete src directory at /output
+    shutil.rmtree(target_dir + '/src')
