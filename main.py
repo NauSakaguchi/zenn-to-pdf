@@ -1,36 +1,44 @@
-# This is a sample Python script.
+# This is a zenn_to_pdf Python script.
 import time
 from selenium import webdriver
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+from js_to_text import js_to_text
+from savefile import save_text_file
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-
-    article_url = 'https://zenn.dev/zenn/books/how-to-create-book'
+    url_article = 'https://zenn.dev/zenn/books/how-to-create-book'
     class_name_of_table_contents = 'ChapterRow_link__14dfi'
+    url_list_table_contents = []
+    url_table_contents = ''
+    output_filepath = './output/test.html'
+    style_file_path = 'src_js/style.js'
 
     driver = webdriver.Chrome('/usr/local/bin/chromedriver')  # Optional argument, if not specified will search path.
 
-    driver.get(article_url)
+    driver.get(url_article)
 
-    time.sleep(5)  # Let the user actually see something!
+    table_contents = driver.find_elements_by_class_name(class_name_of_table_contents)
+    for contents in table_contents:
+        print(contents.get_attribute('href'))
+        url_list_table_contents += [contents.get_attribute('href')]
 
-    list_elements = driver.find_elements_by_class_name(class_name_of_table_contents)
-    for element in list_elements:
-        print(element.get_attribute('href'))
+    url_table_contents = url_list_table_contents[0]
+    print('url: {}'.format(url_table_contents))
 
-    time.sleep(5)  # Let the user actually see something!
+# access to the contents pages
+    driver.get(url_table_contents)
 
-    driver.quit()
+    # element_section = driver.find_element_by_tag_name('section')
+
+    # html_text = element_section.get_attribute('innerHTML')
+
+    # save_text_file(output_filepath, html_text)
+
+# manipulate html tag
+    js = js_to_text(style_file_path)
+    driver.execute_script(js)
+
+    # driver.quit()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
