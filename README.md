@@ -78,15 +78,7 @@ Please type the URL you want convert: [ここに任意のURLをペースト]
 ## Tips
 * ネット速度が遅い場合は？
 
-Answer here
-
-* ネット速度が遅い場合は？
-
-Answer here
-
-* ネット速度が遅い場合は？
-
-Answer here
+Working on ...
 
 ## Authors
 
