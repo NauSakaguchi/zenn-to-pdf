@@ -1,4 +1,12 @@
 # This is a zenn_to_pdf Python script.
+# Convert documents at Zenn () into PDF file
+
+# todo
+# Install chrome driver (not python package) to your computer
+# Install python packages: selenium, PyPDF2
+# Check if driver_path to Selenium is correct
+# See details at README.md
+
 import os
 import shutil
 import time
@@ -9,17 +17,20 @@ from utils import merge_pdf_files
 if __name__ == '__main__':
 
     # init variables
-    url_article = 'https://zenn.dev/zenn/books/how-to-create-book'
-    class_name_of_table_contents = 'ChapterRow_link__14dfi'
+    url_article = 'https://zenn.dev/zenn/books/how-to-create-book'  # default Zenn page (arbitrary)
+    class_name_of_table_contents = 'ChapterRow_link__14dfi'  # this class name could be changed by Zenn
     url_list_table_contents = []
     chapter_title_list = []
-    output_filepath = './output'
-    style_file_path = 'src_js/style.js'
-    driver_path = '/usr/local/bin/chromedriver'
+    output_filepath = './output'  # destination to save pdf file
+    style_file_path = 'src_js/style.js'  # javascript src for changing PDF style
+    driver_path = '/usr/local/bin/chromedriver'  # relative or absolute path to Selenium (arbitrary)
 
-    # clean output folder
+    # clean & setup output folder
     target_dir = output_filepath
-    shutil.rmtree(target_dir)
+    try:
+        shutil.rmtree(target_dir)
+    except FileNotFoundError:
+        print("No such file or directory: {}".format(target_dir))
     os.mkdir(target_dir)
     os.mkdir(target_dir + '/src')
 
@@ -30,14 +41,14 @@ if __name__ == '__main__':
     if user_input != '':
         url_article = user_input
     save_pdf_directory = os.path.dirname(__file__) + '/output/src'  # dirname() get current directory path
-    chrome_options = get_chrome_options(save_pdf_directory)
-    driver = webdriver.Chrome(executable_path=driver_path, options=chrome_options)
-    driver.get(url_article)
-    book_name = driver.title
+    chrome_options = get_chrome_options(save_pdf_directory)  # save_pdf_directory where each chapter PDFs are saved
+    driver = webdriver.Chrome(executable_path=driver_path, options=chrome_options)  # setup chrome driver
+    driver.get(url_article)  # access to the top page of the target book
+    book_title = driver.title  # get the title of the page as PDF title
 
     # get URL list of the table contents
     table_contents = driver.find_elements_by_class_name(class_name_of_table_contents)
-    print("\nEach Chapter URLs:")
+    print("\nEach Chapter URL:")  # list each chapter url below
     for contents in table_contents:
         print(contents.get_attribute('href'))
         url_list_table_contents += [contents.get_attribute('href')]
@@ -54,8 +65,8 @@ if __name__ == '__main__':
 
     # append pdf files into /output/book_name.pdf
     print()
-    merge_pdf_files(chapter_title_list, save_pdf_directory, output_filepath, book_name)
+    merge_pdf_files(chapter_title_list, save_pdf_directory, output_filepath, book_title)
 
     # delete src directory at /output
-    print("almost done...")
+    print("\n\nalmost done...")
     shutil.rmtree(target_dir + '/src')
