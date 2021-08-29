@@ -6,18 +6,12 @@ from selenium import webdriver
 from pdf_downloader import get_chrome_options, save_as_pdf
 from utils import merge_pdf_files
 
-# todo
-# url_articleを入力された値にする
-# プロセスの進捗度を表示
-# chromeのウィンドウを非表示に
-
 if __name__ == '__main__':
 
     # init variables
     url_article = 'https://zenn.dev/zenn/books/how-to-create-book'
     class_name_of_table_contents = 'ChapterRow_link__14dfi'
     url_list_table_contents = []
-    url_table_contents = ''
     chapter_title_list = []
     output_filepath = './output'
     style_file_path = 'src_js/style.js'
@@ -30,29 +24,38 @@ if __name__ == '__main__':
     os.mkdir(target_dir + '/src')
 
     # setup web driver for scraping
-    savefile_default_directory = os.path.dirname(__file__) + '/output/src'
-    chrome_options = get_chrome_options(savefile_default_directory)
+    print("\nThis tool converts the article of Zenn to PDF file.")
+    print("Please type the URL you want convert:", end=' ')
+    user_input = input().strip()
+    if user_input != '':
+        url_article = user_input
+    save_pdf_directory = os.path.dirname(__file__) + '/output/src'  # dirname() get current directory path
+    chrome_options = get_chrome_options(save_pdf_directory)
     driver = webdriver.Chrome(executable_path=driver_path, options=chrome_options)
     driver.get(url_article)
     book_name = driver.title
 
     # get URL list of the table contents
     table_contents = driver.find_elements_by_class_name(class_name_of_table_contents)
-    print("Each Chpater URLs:")
+    print("\nEach Chapter URLs:")
     for contents in table_contents:
         print(contents.get_attribute('href'))
         url_list_table_contents += [contents.get_attribute('href')]
 
     # access to the contents pages & save as pdf
-    for url_table_contents in url_list_table_contents:
-        chapter_title_list.append(save_as_pdf(driver, url_table_contents, style_file_path))
+    for i, url_table_contents in enumerate(url_list_table_contents):
+        chapter_title_list.append(save_as_pdf(driver, url_table_contents, i + 1, style_file_path))
+        print("\rProcess " + str(i + 1) + '/' + str(len(url_list_table_contents)) + " done", end="")
+    print()
 
     # close chrome window and terminate driver
     time.sleep(3)  # in case it takes time to download pdf files
     driver.quit()
 
     # append pdf files into /output/book_name.pdf
-    merge_pdf_files(chapter_title_list, savefile_default_directory, output_filepath, book_name)
+    print()
+    merge_pdf_files(chapter_title_list, save_pdf_directory, output_filepath, book_name)
 
     # delete src directory at /output
+    print("almost done...")
     shutil.rmtree(target_dir + '/src')
